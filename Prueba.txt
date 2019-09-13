@@ -1,16 +1,11 @@
-a = (((8 + c) + d) / 3)
+VAR
+--/  asdasd /--
+--/asdasdaa--/1234 /--/--
+--/asdasdasd--/--/--/asdasds/--/-- /--/--
+	[Float]:[a];
+	[Integer, Float, Float]:[b,c,d];
 
-IF( 2 >= 3 OR 3!==2){
-b=1;
-}
-
-IF( 2 >= 3 OR 3!==2){
-c=3;
-}ELSE{
-a=3;
-}
+ENDVAR
 
 
-
-
-
+CONST z = 3;
