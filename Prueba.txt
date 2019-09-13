@@ -4,8 +4,18 @@ VAR
 --/asdasdasd--/--/--/asdasds/--/-- /--/--
 	[Float]:[a];
 	[Integer, Float, Float]:[b,c,d];
+	[Integer, Integer, Integer, Float, Float]:[p1,p2,p3,p4,p5];
+	[Integer]:[h1];
 
 ENDVAR
 
 
-CONST z = 3;
+CONST constante1 = 3;
+variable1=variable2;
+entero1=5;
+entero2=50;
+float1=2.3;
+float2=2.;
+float3=.5;
+string1="ASD ASD AAASSD";
+

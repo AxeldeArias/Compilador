@@ -4,7 +4,6 @@
 #include <conio.h>
 #include "y.tab.h"
 FILE  *yyin;
-int yylval;
 
 %}
 %option noyywrap  
@@ -21,58 +20,58 @@ CTE_R		(-?)([1-9])*"."({DIGITO})*
 CTE_S 		\"([^(\")])*\"
 
 %%
-"REPEAT"		{ return C_REPEAT_A; }
-"UNTIL"			{ return C_REPEAT_C; }
-"IF"			{ return C_IF_A; }
-"ELSE"			{ return C_IF_E; }
-"ENDIF"			{ return C_IF_C; }
+"REPEAT"		{ printf("REPEAT"); 		return C_REPEAT_A; }
+"UNTIL"			{ printf("UNTIL");			return C_REPEAT_C; }
+"IF"			{ printf("IF");				return C_IF_A; }
+"ELSE"			{ printf("ELSE");			return C_IF_E; }
+"ENDIF"			{ printf("ENDIF");			return C_IF_C; }
+	
+"FILTER"		{ printf("FILTER");			return C_FILTER_A; }
+"ENDFILTER"		{ printf("ENDFILTER");		return C_FILTER_C; }
 
-"FILTER"		{ return C_FILTER_A; }
-"ENDFILTER"		{ return C_FILTER_C; }
-
-"PRINT"			{ return PRINT; }
-"READ"			{ return READ; }
+"PRINT"			{ printf("PRINT");			return PRINT; }
+"READ"			{ printf("READ");			return READ; }
 
 
 "VAR"			{ return VAR; }
 "ENDVAR"		{ return ENDVAR; }
-"CONST"			{ return CONST; }
-"Integer"		{ return INTEGER; }
-"Float"			{ return FLOAT; }
-"String"		{ return STRING; }
+"CONST"			{ printf("CONST"); 			return CONST; }
+"Integer"		{ printf("Integer");		return INTEGER; }
+"Float"			{ printf("Float");			return FLOAT; }
+"String"		{ printf("String");			return STRING; }
 
 
-"="			{ return OP_ASIG;}
-"+"			{ return OP_SUMARESTA;}
-"-"			{ return OP_SUMARESTA;}
-"*"			{ return OP_MULDIV;}
-"/"			{ return OP_MULDIV;}
+"="			{ printf(" = ");			return OP_ASIG;}
+"+"			{ printf("+");				return OP_SUMARESTA;}
+"-"			{ printf("-");				return OP_SUMARESTA;}
+"*"			{ printf("*");				return OP_MULDIV;}
+"/"			{ printf("/");				return OP_MULDIV;}
 
-"("			{ return PARENTESIS_A;}
-")"			{ return PARENTESIS_C;}
-"{"			{ return LLAVE_A;}
-"}"			{ return LLAVE_C;}
-"["			{ return CORCHETE_A; }
-"]"			{ return CORCHETE_C; }
-","			{ return COMA; }
-";"			{ return PYC; }
-":"			{ return DOSPUNTOS; }
-"_"			{ return GUIONBAJO; }
+"("			{ printf("(");				return PARENTESIS_A;}
+")"			{ printf(")");				return PARENTESIS_C;}
+"{"			{ printf("{");				return LLAVE_A;}
+"}"			{ printf("}");				return LLAVE_C;}
+"["			{ printf("[");				return CORCHETE_A; }
+"]"			{ printf("]");				return CORCHETE_C; }
+","			{ printf(",");				return COMA; }
+";"			{ printf(";\n");			return PYC; }
+":"			{ printf(":");				return DOSPUNTOS; }
+"_"			{ printf("_");				return GUIONBAJO; }
 
-"=="		{ return OP_IGUAL;}
-"!=="		{ return OP_DISTINTO;}
-"<"			{ return OP_COMPARACION;}
-"<="		{ return OP_COMPARACION;}
-">"			{ return OP_COMPARACION;}
-">="		{ return OP_COMPARACION;}
-"AND"		{ return OP_LOGICO;}
-"OR"		{ return OP_LOGICO;}
-"!"		{ return OP_NEGACION; }
+"=="		{ printf(" == "); 	return OP_IGUAL;}
+"!=="		{ printf(" !== "); 	return OP_DISTINTO;}
+"<"			{ printf(" < "); 	return OP_COMPARACION;}
+"<="		{ printf(" <= "); 	return OP_COMPARACION;}
+">"			{ printf(" > "); 	return OP_COMPARACION;}
+">="		{ printf(" >= ");	return OP_COMPARACION;}
+"AND"		{ printf(" AND ");	return OP_LOGICO;}
+"OR"		{ printf(" OR ");	return OP_LOGICO;}
+"!"			{ printf(" !");		return OP_NEGACION; }
 
-{ID}			{ return ID;}
-{CTE_E}			{ yylval = atoi( yytext ) ;return CTE_E;}
-{CTE_R}			{ yylval = atof( yytext ) ;return CTE_R;}
-{CTE_S}			{ return CTE_S;}
+{ID}			{ yylval.str_val = yytext; printf( "ID(%s)", yylval.str_val); return ID;}
+{CTE_E}			{ yylval.intval = atoi(yytext); printf( "ENTERO(%d)", yylval.intval); return CTE_E;}
+{CTE_R}			{ yylval.val = atof(yytext); printf( "FLOAT(%f)", yylval.val); return CTE_R;}
+{CTE_S}			{ yylval.str_val = yytext; printf( "STRING(%s)", yylval.str_val); return CTE_S;}
 {COMENTARIO}	/* IGNORAR TOKEN */
 [\t\n]+			/* IGNORAR TOKEN */
 
