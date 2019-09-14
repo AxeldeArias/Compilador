@@ -26,8 +26,8 @@ CTE_S 		\"([^(\")])*\"
 "ELSE"			{ printf("ELSE");			return C_IF_E; }
 "ENDIF"			{ printf("ENDIF");			return C_IF_C; }
 	
-"FILTER"		{ printf("FILTER");			return C_FILTER_A; }
-"ENDFILTER"		{ printf("ENDFILTER");		return C_FILTER_C; }
+"FILTER"		{ printf("FILTER");			return C_FILTER; }
+"_>"			{ printf("_>");				return C_FILTER_REFENTEROS; }
 
 "PRINT"			{ printf("PRINT");			return PRINT; }
 "READ"			{ printf("READ");			return READ; }
@@ -56,7 +56,6 @@ CTE_S 		\"([^(\")])*\"
 ","			{ printf(",");				return COMA; }
 ";"			{ printf(";\n");			return PYC; }
 ":"			{ printf(":");				return DOSPUNTOS; }
-"_"			{ printf("_");				return GUIONBAJO; }
 
 "=="		{ printf(" == "); 	return OP_COMPARACION;}
 "!=="		{ printf(" !== "); 	return OP_COMPARACION;}
