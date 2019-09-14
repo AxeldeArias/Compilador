@@ -27,9 +27,15 @@ char *str_val;
 
 %%
 
-start				:		archivo ;
-archivo				:		{ printf("\t\t---INICIO PRINCIPAL DEL PROGRAMA---\n\n"); } VAR { printf("INICIO DECLARACIONES\n"); } bloqdeclaracion ENDVAR { printf("FIN DECLARACIONES\n\n\n"); } { printf("INICIO PROGRAMA\n"); } bloqprograma { printf("\n\n\t\t---FIN PRINCIPAL DEL PROGRAMA---\n\n"); };
+start				:		archivo ; /* SIMBOLO INICIAL */
 
+/* DECLARACION GENERAL DE PROGRAMA
+	- DECLARACIONES Y CUERPO DE PROGRAMA
+	- CUERPO DE PROGRAMA
+*/
+archivo				:		{ printf("\t\t---INICIO PRINCIPAL DEL PROGRAMA---\n\n"); } VAR { printf("INICIO DECLARACIONES\n"); } bloqdeclaracion ENDVAR { printf("FIN DECLARACIONES\n\n"); } { printf("INICIO PROGRAMA\n"); } bloqprograma { printf("\n\n\t\t---FIN PRINCIPAL DEL PROGRAMA---\n\n"); };
+
+/* REGLAS BLOQUE DE DECLARACIONES */
 bloqdeclaracion		:		bloqdeclaracion declaracion ;
 bloqdeclaracion		:		declaracion ;
 
@@ -42,19 +48,17 @@ listatipos			:		INTEGER |
 							
 listavariables		:		listavariables COMA ID ;
 listavariables		:		ID;
+/* FIN REGLAS BLOQUE DE DECLARACIONES */
 
-
-
-
+/* REGLAS BLOQUE DE CUERPO DE PROGRAMA */
 bloqprograma		:		bloqprograma sentencia ;
 bloqprograma		:		sentencia ;
 
-sentencia			:		constante 	|
-							asignacion	;
-							/*	decision 	|
-								filtro		|
-								bucle		;
-							*/
+sentencia			:		constante 	| /* DEFINICION DE CONSTANTE */
+							asignacion	| 
+							decision	| /* IF */
+							bucle		; /* REPEAT */
+							/*	FALTA filtro  */
 							
 constante			:		CONST ID OP_ASIG varconstante PYC ;
 varconstante		:		CTE_E	|
@@ -63,7 +67,27 @@ varconstante		:		CTE_E	|
 
 asignacion			:		ID OP_ASIG varconstante PYC |
 							ID OP_ASIG ID PYC			;
+							
+decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A {printf("\t");} bloqprograma LLAVE_C
 
+
+condicion			:		comparacion											|
+							OP_NEGACION PARENTESIS_A comparacion PARENTESIS_C	|
+							comparacion OP_LOGICO comparacion					;
+
+
+comparacion			:		expresion OP_COMPARACION expresion	;
+							
+expresion			:		termino							|
+							expresion OP_SUMARESTA termino	;
+							
+termino				:		factor						|
+							termino OP_MULDIV factor	;
+							
+factor				:		ID				|
+							varconstante	;
+							
+bucle				:		C_REPEAT_A bloqprograma C_REPEAT_C PARENTESIS_A condicion PARENTESIS_C PYC ;						
 
 
 %%

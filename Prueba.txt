@@ -19,3 +19,33 @@ float2=2.;
 float3=.5;
 string1="ASD ASD AAASSD";
 
+IF(a<b) {
+	float4=2.;
+}
+IF(a>3) {
+	float5=2.;
+}
+IF(3<=b) {
+	float6=2.;
+}
+IF(3>=b) {
+	float6=2.;
+}
+IF(3<=b AND a<b) {
+	float6=2.;
+}
+
+IF(b!==5 OR 5==c) {
+	entero25 = 52;
+	IF(z2>=z3) {
+		entero26=1251243;
+	}
+}	
+IF(3<=b) {
+	float6=2.;
+}
+
+REPEAT
+	float7=3;
+	inte3=5;
+UNTIL(a<b);
