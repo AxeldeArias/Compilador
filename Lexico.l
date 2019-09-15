@@ -1,9 +1,12 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <conio.h>
 #include "y.tab.h"
 FILE  *yyin;
+
+int cota_error(char* mensaje);
 
 %}
 %option noyywrap  
@@ -68,16 +71,44 @@ CTE_S 		\"([^(\")])*\"
 "!"			{ printf("!");		return OP_NEGACION; }
 
 {ID}			{ yylval.str_val = yytext; printf( "ID(%s)", yylval.str_val); return ID;}
-{CTE_E}			{ yylval.intval = atoi(yytext); printf( "ENTERO(%d)", yylval.intval); return CTE_E;}
-{CTE_R}			{ yylval.val = atof(yytext); printf( "FLOAT(%f)", yylval.val); return CTE_R;}
-{CTE_S}			{ yylval.str_val = yytext; printf( "STRING(%s)", yylval.str_val); return CTE_S;}
+{CTE_E}			{ if(atoi(yytext)<=32767 AND atoi(yytext)>=-32768)
+				{
+				yylval.intval = atoi(yytext); 
+				printf( "ENTERO(%d)", yylval.intval); 
+				return CTE_E;
+				}
+			cota_error("Variable Entera supera limite permitido");
+			}
+{CTE_R}			{ 
+			if(atof(yytext)<=2147483647 AND atof(yytext)>=-2137483648)
+				{
+					yylval.val = atof(yytext); 
+					printf( "FLOAT(%f)", yylval.val); 
+					return CTE_R;
+				}
+			cota_error("Variable Real supera limite permitido");
+			}
+{CTE_S}			{
+			if(strlen(yytext)<=30){
+				yylval.str_val = yytext; 
+				printf( "STRING(%s)", yylval.str_val); 
+				return CTE_S;
+				}
+			cota_error("Constante String supera Maximo 30 caracteres.");
+			}
 {COMENTARIO}	{ printf("/* LINEA DE COMENTARIOS */"); }
 [\t{1}]			{ printf("\t"); }		/* NO RETORNA TOKEN */
 [\n{1}]			{ printf("\n"); }		/* NO RETORNA TOKEN */
 [" "{1}]			{ printf(" "); }			/* NO RETORNA TOKEN */
 
 "\n"      		
-"\t"		
+"\t"	
 
+int cota_error(char* mensaje)
+{
+	printf("Error lexico: %s\n", mensaje);
+	system ("Pause");
+	exit (1);
+}
 
 
