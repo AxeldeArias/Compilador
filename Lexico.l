@@ -41,38 +41,40 @@ CTE_S 		\"([^(\")])*\"
 "String"		{ printf("String");			return STRING; }
 
 
-"="			{ printf(" = ");			return OP_ASIG;}
-"+"			{ printf(" + ");				return OP_SUMARESTA;}
-"-"			{ printf(" - ");				return OP_SUMARESTA;}
-"*"			{ printf(" * ");				return OP_MULDIV;}
-"/"			{ printf(" / ");				return OP_MULDIV;}
+"="			{ printf("=");			return OP_ASIG;}
+"+"			{ printf("+");				return OP_SUMARESTA;}
+"-"			{ printf("-");				return OP_SUMARESTA;}
+"*"			{ printf("*");				return OP_MULDIV;}
+"/"			{ printf("/");				return OP_MULDIV;}
 
 "("			{ printf("(");				return PARENTESIS_A;}
 ")"			{ printf(")");				return PARENTESIS_C;}
-"{"			{ printf("{\n");				return LLAVE_A;}
-"}"			{ printf("}\n");				return LLAVE_C;}
+"{"			{ printf("{");				return LLAVE_A;}
+"}"			{ printf("}");				return LLAVE_C;}
 "["			{ printf("[");				return CORCHETE_A; }
 "]"			{ printf("]");				return CORCHETE_C; }
 ","			{ printf(",");				return COMA; }
-";"			{ printf(";\n");			return PYC; }
+";"			{ printf(";");			return PYC; }
 ":"			{ printf(":");				return DOSPUNTOS; }
 
-"=="		{ printf(" == "); 	return OP_COMPARACION;}
-"!=="		{ printf(" !== "); 	return OP_COMPARACION;}
-"<"			{ printf(" < "); 	return OP_COMPARACION;}
-"<="		{ printf(" <= "); 	return OP_COMPARACION;}
-">"			{ printf(" > "); 	return OP_COMPARACION;}
-">="		{ printf(" >= ");	return OP_COMPARACION;}
-"AND"		{ printf(" AND ");	return OP_LOGICO;}
-"OR"		{ printf(" OR ");	return OP_LOGICO;}
-"!"			{ printf(" !");		return OP_NEGACION; }
+"=="		{ printf("=="); 	return OP_COMPARACION;}
+"!=="		{ printf("!=="); 	return OP_COMPARACION;}
+"<"			{ printf("<"); 	return OP_COMPARACION;}
+"<="		{ printf("<="); 	return OP_COMPARACION;}
+">"			{ printf(">"); 	return OP_COMPARACION;}
+">="		{ printf(">=");	return OP_COMPARACION;}
+"AND"		{ printf("AND");	return OP_LOGICO;}
+"OR"		{ printf("OR");	return OP_LOGICO;}
+"!"			{ printf("!");		return OP_NEGACION; }
 
 {ID}			{ yylval.str_val = yytext; printf( "ID(%s)", yylval.str_val); return ID;}
 {CTE_E}			{ yylval.intval = atoi(yytext); printf( "ENTERO(%d)", yylval.intval); return CTE_E;}
 {CTE_R}			{ yylval.val = atof(yytext); printf( "FLOAT(%f)", yylval.val); return CTE_R;}
 {CTE_S}			{ yylval.str_val = yytext; printf( "STRING(%s)", yylval.str_val); return CTE_S;}
-{COMENTARIO}	/* IGNORAR TOKEN */
-[\t\n]+			/* IGNORAR TOKEN */
+{COMENTARIO}	{ printf("/* LINEA DE COMENTARIOS */"); }
+[\t{1}]			{ printf("\t"); }		/* NO RETORNA TOKEN */
+[\n{1}]			{ printf("\n"); }		/* NO RETORNA TOKEN */
+[" "{1}]			{ printf(" "); }			/* NO RETORNA TOKEN */
 
 "\n"      		
 "\t"		

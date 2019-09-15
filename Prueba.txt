@@ -10,7 +10,7 @@ VAR
 ENDVAR
 
 
-CONST constante1 = 3;
+CONST constante1 = 37623171263716238716237162873;
 variable1=variable2;
 entero1=5;
 entero2=50;
@@ -19,10 +19,10 @@ float2=2.;
 float3=.5;
 string1="ASD ASD AAASSD";
 
-IF(a<b) {
+IF(a<(j+s*5)) {
 	float4=2.;
 }
-IF(a>3) {
+IF((a+25*i)>3) {
 	float5=2.;
 }
 IF(3<=b) {
@@ -46,6 +46,12 @@ IF(3<=b) {
 }
 
 REPEAT
+	REPEAT
+		CONST constante5 = "123536435asdasdasda";
+		PRINT "HOLA COMO ESTAS";
+		READ var1;
+		PRINT var2;
+	UNTIL(FILTER(_>>=24,[a,b,c,d,f,g])!==a);
 	float7=3;
 	inte3=5;
 UNTIL(a<b);

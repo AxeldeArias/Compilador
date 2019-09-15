@@ -22,7 +22,7 @@ char *str_val;
 %token VAR ENDVAR CONST INTEGER FLOAT STRING
 %token OP_ASIG OP_SUMARESTA OP_MULDIV
 %token PARENTESIS_A PARENTESIS_C LLAVE_A LLAVE_C CORCHETE_A CORCHETE_C COMA PYC DOSPUNTOS
-%token OP_IGUAL OP_DISTINTO OP_COMPARACION OP_LOGICO OP_NEGACION
+%token OP_COMPARACION OP_LOGICO OP_NEGACION
 
 
 %%
@@ -39,7 +39,7 @@ archivo				:		{ printf("\t\t---INICIO PRINCIPAL DEL PROGRAMA---\n\n"); } VAR { p
 bloqdeclaracion		:		bloqdeclaracion declaracion ;
 bloqdeclaracion		:		declaracion ;
 
-declaracion			:		{ printf("\tINICIO DECLARACION\n\t\t"); } CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC { printf("\tFIN DECLARACION\n\n"); };
+declaracion			:		CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC ;
 
 listatipos			:		listatipos COMA INTEGER |
 							listatipos COMA FLOAT 	;
@@ -57,8 +57,14 @@ bloqprograma		:		sentencia ;
 sentencia			:		constante 	| /* DEFINICION DE CONSTANTE */
 							asignacion	| 
 							decision	| /* IF */
-							bucle		; /* REPEAT */
-							/*	FALTA filtro  */
+							bucle		| /* REPEAT */
+							imprimir	| /* PRINT */
+							leer		; /* READ */
+							/*	VA FILTRO? */
+imprimir			:		PRINT CTE_S	PYC	|
+							PRINT ID PYC	;
+leer				:		READ ID	PYC		;
+							
 							
 constante			:		CONST ID OP_ASIG varconstante PYC ;
 varconstante		:		CTE_E	|
@@ -68,15 +74,16 @@ varconstante		:		CTE_E	|
 asignacion			:		ID OP_ASIG varconstante PYC |
 							ID OP_ASIG ID PYC			;
 							
-decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A {printf("\t");} bloqprograma LLAVE_C
-
+decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C ;
+/* VA CON ELSE? */
 
 condicion			:		comparacion											|
 							OP_NEGACION PARENTESIS_A comparacion PARENTESIS_C	|
 							comparacion OP_LOGICO comparacion					;
 
 
-comparacion			:		expresion OP_COMPARACION expresion	;
+comparacion			:		expresion OP_COMPARACION expresion	|
+							filtro OP_COMPARACION expresion		;
 							
 expresion			:		termino							|
 							expresion OP_SUMARESTA termino	;
@@ -85,13 +92,16 @@ termino				:		factor						|
 							termino OP_MULDIV factor	;
 							
 factor				:		ID				|
-							varconstante	;
+							varconstante	|
+							PARENTESIS_A expresion PARENTESIS_C;
 							
-bucle				:		C_REPEAT_A bloqprograma C_REPEAT_C PARENTESIS_A condicion PARENTESIS_C PYC ;						
+bucle				:		C_REPEAT_A bloqprograma C_REPEAT_C PARENTESIS_A condicion PARENTESIS_C PYC ;
 
-filtro				:		C_FILTER PARENTESIS_A C_FILTER_REFENTEROS PARENTESIS_A expresion PARENTESIS_C COMA CORCHETE_A listavariables CORCHETE_C PARENTESIS_C		|
-							C_FILTER PARENTESIS_A C_FILTER_REFENTEROS PARENTESIS_A expresion PARENTESIS_C COMA CORCHETE_A listavariables CORCHETE_C PARENTESIS_C		;
+filtro				:		C_FILTER PARENTESIS_A condfiltro COMA CORCHETE_A listavariables CORCHETE_C PARENTESIS_C	;
 
+condfiltro			:		C_FILTER_REFENTEROS OP_COMPARACION expresion |
+							C_FILTER_REFENTEROS OP_COMPARACION expresion OP_LOGICO C_FILTER_REFENTEROS OP_COMPARACION expresion ;
+							/* NO FUNCIONA DOBLE CONDICION */
 
 %%
 int main(int argc,char *argv[]){
