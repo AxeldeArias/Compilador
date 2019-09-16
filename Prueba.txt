@@ -2,10 +2,11 @@ VAR
 --/  asdasd /--
 --/asdasdaa--/1234 /--/--
 --/asdasdasd--/--/--/asdasds/--/-- /--/--
-	[Float]:[a];
-	[Integer, Float, Float]:[b,c,d];
-	[Integer, Integer, Integer, Float, Float]:[p1,p2,p3,p4,p5];
+	[Float]:[aa, bb];
+	[Integer, Float, Float]:[b,a,d];
+	[Integer, Integer, Integer, Float, Float]:[p1,p2,p3,p4];
 	[Integer]:[h1];
+	[Float, Integer, Float, Integer, Float]:[h2, h1];
 
 ENDVAR
 
@@ -17,7 +18,7 @@ entero2=50;
 float1=2.3;
 float2=2.;
 float3=.5;
-string1="ASD ASD AAASSD";
+CONST string1="ASD ASD AAASSD";
 
 IF(a<(j+s*5)) {
 	float4=2.;
@@ -47,7 +48,7 @@ IF(3<=b) {
 
 REPEAT
 	REPEAT
-		CONST constante5 = "111111111122222222223333333333";
+		CONST constante5 = "1113333333";
 		PRINT "HOLA";
 		READ var1;
 		PRINT var2;

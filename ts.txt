@@ -1,0 +1,27 @@
+NOMBRE				TIPO				VALOR			LONGITUD
+aa                            FLOAT                         --                            02
+b                             INTEGER                       --                            01
+a                             FLOAT                         --                            01
+d                             FLOAT                         --                            01
+p1                            INTEGER                       --                            02
+p2                            INTEGER                       --                            02
+p3                            INTEGER                       --                            02
+p4                            FLOAT                         --                            02
+h1                            INTEGER                       --                            02
+h2                            FLOAT                         --                            02
+_123                          CONST_INT                     123                           03
+_5                            CONST_INT                     5                             01
+_50                           CONST_INT                     50                            02
+_2.300000                     CONST_REAL                    2.300000                      08
+_2.000000                     CONST_REAL                    2.000000                      08
+_0.500000                     CONST_REAL                    0.500000                      08
+_"ASD ASD AAASSD"             CONST_STR                     "ASD ASD AAASSD"              16
+_"ASD ASD AAASSD";            CONST_STR                     "ASD ASD AAASSD";             17
+_25                           CONST_INT                     25                            02
+_3                            CONST_INT                     3                             01
+_52                           CONST_INT                     52                            02
+_125                          CONST_INT                     125                           03
+_"1113333333"                 CONST_STR                     "1113333333"                  12
+_"1113333333";                CONST_STR                     "1113333333";                 13
+_"HOLA"                       CONST_STR                     "HOLA"                        06
+_24                           CONST_INT                     24                            02

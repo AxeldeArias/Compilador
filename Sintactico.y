@@ -5,6 +5,8 @@
 #include <string.h>
 #include "y.tab.h"
 
+#define MAX_IDS 20
+
 
 int yystopparser=0;
 
@@ -15,9 +17,12 @@ char cadAux[50];
 char* ptr;
 
 int existeID(char *);
-char ids[20][32];
-int cantIds=0,i;
+char ids[MAX_IDS][32];
+int tipoid[MAX_IDS];
+int cantIds = 0;
+int canttipos = 0;
 int existeCTE(char *);
+void insertarIds();
 %} 
 
 
@@ -51,12 +56,13 @@ archivo				:		{ printf("\t\t---INICIO PRINCIPAL DEL PROGRAMA---\n\n"); } VAR { p
 bloqdeclaracion		:		bloqdeclaracion declaracion ;
 bloqdeclaracion		:		declaracion ;
 
-declaracion			:		CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC ;
+declaracion			:		CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC {insertarIds();};
 
 listatipos			:		listatipos COMA listadato|
 							listadato;
-listadato			:		INTEGER {for(i=0;i<cantIds;i++){insertarEnTabla(ids[i],"INTEGER","--",0,0);}cantIds=0;}|
-							FLOAT	{for(i=0;i<cantIds;i++){insertarEnTabla(ids[i],"FLOAT","--",0,0);}cantIds=0;};
+
+listadato			:		INTEGER {tipoid[canttipos++] = 0; }	|
+							FLOAT	{tipoid[canttipos++] = 1; }	;
 							
 listavariables		:		listavariables COMA ID {strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;}|
 							ID{strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;};
@@ -72,16 +78,16 @@ sentencia			:		constante 	| /* DEFINICION DE CONSTANTE */
 							bucle		| /* REPEAT */
 							imprimir	| /* PRINT */
 							leer		; /* READ */
-							/*	VA FILTRO? */
+							
 imprimir			:		PRINT CTE_S	PYC	|
 							PRINT ID PYC	;
 leer				:		READ ID	PYC		;
 							
 							
-constante			:		CONST ID OP_ASIG varconstante PYC ;
+constante			:		CONST ID OP_ASIG varconstante PYC	|
+							CONST ID OP_ASIG CTE_S PYC	{insertarEnTabla(cadAux,"CONST_STR",yylval.str_val,0,0);}		;
 varconstante		:		CTE_E	|
-							CTE_R	|
-							CTE_S	;
+							CTE_R	;
 
 asignacion			:		ID OP_ASIG varconstante PYC |
 							ID OP_ASIG ID PYC			;
@@ -113,7 +119,6 @@ filtro				:		C_FILTER PARENTESIS_A condfiltro COMA CORCHETE_A listavariables COR
 
 condfiltro			:		C_FILTER_REFENTEROS OP_COMPARACION expresion |
 							C_FILTER_REFENTEROS OP_COMPARACION expresion OP_LOGICO C_FILTER_REFENTEROS OP_COMPARACION expresion ;
-							/* NO FUNCIONA DOBLE CONDICION */
 
 %%
 int main(int argc,char *argv[]){
@@ -136,6 +141,24 @@ int yyerror(void){
 	printf("\n\n\n----- Syntax Error -----\n");
 	system ("Pause");
 	exit (1);
+}
+
+void insertarIds(){
+	if(cantIds > canttipos) {
+		cantIds = canttipos;
+	}
+	for(int i=0;i<cantIds;i++) {
+		if(existeID(ids[i])) 
+			insertarEnTabla(ids[i],(tipoid[i] == 1 ? "FLOAT" : "INTEGER"),"--",0,0);
+		
+	}
+	
+	memset( ids, '\0', MAX_IDS );
+	memset( tipoid, '\0', MAX_IDS );
+	cantIds = 0;
+	canttipos = 0;
+		
+		
 }
 
 int existeID(char *id){
@@ -199,7 +222,7 @@ void insertarEnTabla(char* nombreSimbolo,char* tipoSimbolo,char* valorString,int
 	
 	if(strcmp(tipoSimbolo,"CONST_INT") == 0){
 		sprintf(valor,"%d",valorInteger);
-		if(existeCTE(strcat(guionBajo,valor))!=0)
+		if(existeCTE((strcmp(nombreSimbolo, "") == 0 ? strcat(guionBajo,valor) : nombreSimbolo)) !=0 )
 			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valor,strlen(guionBajo)-1);
 	}
 	else{
