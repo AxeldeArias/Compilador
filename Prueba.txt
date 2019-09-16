@@ -48,7 +48,7 @@ IF(3<=b) {
 REPEAT
 	REPEAT
 		CONST constante5 = "111111111122222222223333333333";
-		PRINT "HOLA COMO ESTAS";
+		PRINT "HOLA";
 		READ var1;
 		PRINT var2;
 	UNTIL(FILTER(_>=24,[a,b,c,d,f,g])!==a);

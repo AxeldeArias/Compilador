@@ -2,12 +2,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <string.h>
 #include "y.tab.h"
 
 
 int yystopparser=0;
+
 FILE *yyin;
-%}
+char tituloTS[] = "NOMBRE\t\t\t\tTIPO\t\t\t\tVALOR\t\t\tLONGITUD\n";
+void insertarEnTabla(char*,char*,char*,int,double);
+char cadAux[50];
+char* ptr;
+
+int existeID(char *);
+char ids[20][32];
+int cantIds=0,i;
+int existeCTE(char *);
+%} 
+
 
 %union {
 int intval;
@@ -41,13 +53,13 @@ bloqdeclaracion		:		declaracion ;
 
 declaracion			:		CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC ;
 
-listatipos			:		listatipos COMA INTEGER |
-							listatipos COMA FLOAT 	;
-listatipos			:		INTEGER |
-							FLOAT	;
+listatipos			:		listatipos COMA listadato|
+							listadato;
+listadato			:		INTEGER {for(i=0;i<cantIds;i++){insertarEnTabla(ids[i],"INTEGER","--",0,0);}cantIds=0;}|
+							FLOAT	{for(i=0;i<cantIds;i++){insertarEnTabla(ids[i],"FLOAT","--",0,0);}cantIds=0;};
 							
-listavariables		:		listavariables COMA ID ;
-listavariables		:		ID;
+listavariables		:		listavariables COMA ID {strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;}|
+							ID{strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;};
 /* FIN REGLAS BLOQUE DE DECLARACIONES */
 
 /* REGLAS BLOQUE DE CUERPO DE PROGRAMA */
@@ -105,10 +117,14 @@ condfiltro			:		C_FILTER_REFENTEROS OP_COMPARACION expresion |
 
 %%
 int main(int argc,char *argv[]){
+	
+  FILE *archTS = fopen("ts.txt","wt");
 	if ((yyin = fopen(argv[1], "rt")) == NULL){
 		printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
 	}
 	else{
+	fwrite(tituloTS,sizeof(char), sizeof(tituloTS)-1, archTS);
+    fclose(archTS);
 		yyparse();
 	}
 	
@@ -121,3 +137,85 @@ int yyerror(void){
 	system ("Pause");
 	exit (1);
 }
+
+int existeID(char *id){
+  FILE *archTS2 = fopen("ts.txt","rt");
+  char linea[100];
+  char *aux,*ptr;
+  char nombre[30];
+  
+  fgets(linea,sizeof(linea),archTS2);
+  while(fgets(linea,sizeof(linea),archTS2)!=NULL)
+  {
+	aux=strchr(linea,'\n');
+	aux-=62;
+        *aux='\0';
+        aux-=30;
+	strcpy(nombre,aux);
+	strtok(nombre," ");
+        	if(strcmp(nombre,id)==0){
+			fclose(archTS2);
+			return 0;
+		}
+  }
+
+  fclose(archTS2);
+  return 1;
+}
+
+int existeCTE(char *cte){
+  FILE *archTS2 = fopen("ts.txt","rt");
+  char linea[100];
+  char *aux,*ptr;
+  char nombre[30];
+
+	fgets(linea,sizeof(linea),archTS2);
+	while(fgets(linea,sizeof(linea),archTS2)!=NULL)
+    	{
+	aux=strchr(linea,'\n');
+	aux-=62;
+        *aux='\0';
+        aux-=30;
+	strcpy(nombre,aux);
+	strtok(nombre," ");
+        	if(strcmp(nombre,cte)==0){
+			fclose(archTS2);
+			return 0;
+		}
+    	}
+
+   fclose(archTS2);
+   return 1;
+}
+
+void insertarEnTabla(char* nombreSimbolo,char* tipoSimbolo,char* valorString,int valorInteger, double valorFloat){
+  FILE *archTS2 = fopen("ts.txt","a");
+  char valor[20];
+  char guionBajo[30]="_";
+
+	if(strcmp(tipoSimbolo,"FLOAT")==0 || strcmp(tipoSimbolo,"INTEGER")==0 || strcmp(tipoSimbolo,"STRING")==0)
+		fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombreSimbolo,tipoSimbolo,"--",strlen(nombreSimbolo));
+	else{
+	
+	if(strcmp(tipoSimbolo,"CONST_INT") == 0){
+		sprintf(valor,"%d",valorInteger);
+		if(existeCTE(strcat(guionBajo,valor))!=0)
+			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valor,strlen(guionBajo)-1);
+	}
+	else{
+	if(strcmp(tipoSimbolo,"CONST_REAL") == 0){
+		sprintf(valor,"%f",valorFloat);
+		if(existeCTE(strcat(guionBajo,valor))!=0)
+			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valor,strlen(guionBajo)-1);
+	}
+	else{
+	 if(strcmp(tipoSimbolo,"CONST_STR") == 0)
+		if(existeCTE(strcat(guionBajo,valorString))!=0)
+			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valorString,strlen(guionBajo)-1);
+	}}}
+
+	fclose(archTS2);
+
+}
+
+

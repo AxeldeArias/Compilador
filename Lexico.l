@@ -44,7 +44,7 @@ CTE_S 		\".*\"
 "String"		{ printf("String");			return STRING; }
 
 
-"="			{ printf("=");			return OP_ASIG;}
+"="			{ printf("=");				return OP_ASIG;}
 "+"			{ printf("+");				return OP_SUMARESTA;}
 "-"			{ printf("-");				return OP_SUMARESTA;}
 "*"			{ printf("*");				return OP_MULDIV;}
@@ -57,17 +57,17 @@ CTE_S 		\".*\"
 "["			{ printf("[");				return CORCHETE_A; }
 "]"			{ printf("]");				return CORCHETE_C; }
 ","			{ printf(",");				return COMA; }
-";"			{ printf(";");			return PYC; }
+";"			{ printf(";");				return PYC; }
 ":"			{ printf(":");				return DOSPUNTOS; }
 
 "=="		{ printf("=="); 	return OP_COMPARACION;}
 "!=="		{ printf("!=="); 	return OP_COMPARACION;}
-"<"			{ printf("<"); 	return OP_COMPARACION;}
+"<"			{ printf("<"); 		return OP_COMPARACION;}
 "<="		{ printf("<="); 	return OP_COMPARACION;}
-">"			{ printf(">"); 	return OP_COMPARACION;}
-">="		{ printf(">=");	return OP_COMPARACION;}
+">"			{ printf(">"); 		return OP_COMPARACION;}
+">="		{ printf(">=");		return OP_COMPARACION;}
 "AND"		{ printf("AND");	return OP_LOGICO;}
-"OR"		{ printf("OR");	return OP_LOGICO;}
+"OR"		{ printf("OR");		return OP_LOGICO;}
 "!"			{ printf("!");		return OP_NEGACION; }
 
 {ID}			{ yylval.str_val = yytext; printf( "ID(%s)", yylval.str_val); return ID;}
@@ -75,6 +75,7 @@ CTE_S 		\".*\"
 					{
 						yylval.intval = atoi(yytext); 
 						printf( "ENTERO(%d)", yylval.intval); 
+						insertarEnTabla("","CONST_INT","--",yylval.intval,0);
 						return CTE_E;
 					}
 					cota_error("Variable Entera supera limite permitido");
@@ -83,7 +84,8 @@ CTE_S 		\".*\"
 					if(atof(yytext)<=2147483647 && atof(yytext)>=-2137483648)
 					{
 						yylval.val = atof(yytext); 
-						printf( "FLOAT(%f)", yylval.val); 
+						printf( "FLOAT(%f)", yylval.val);
+						insertarEnTabla("","CONST_REAL","--",0,yylval.val);
 						return CTE_R;
 					}
 					cota_error("Variable Real supera limite permitido");
@@ -92,6 +94,7 @@ CTE_S 		\".*\"
 					if(strlen(yytext)<=32){ /* TAMBIEN CUENTA LAS COMILLAS; SON 2 COMILLAS + 30 CARACTERES */
 						yylval.str_val = yytext; 
 						printf( "STRING(%s)", yylval.str_val); 
+						insertarEnTabla(yylval.str_val,"CONST_STR",yylval.str_val,0,0);
 						return CTE_S;
 					}
 					cota_error("Constante String supera Maximo 30 caracteres.");
