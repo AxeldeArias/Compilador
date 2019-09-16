@@ -144,10 +144,11 @@ int yyerror(void){
 }
 
 void insertarIds(){
+	int i;
 	if(cantIds > canttipos) {
 		cantIds = canttipos;
 	}
-	for(int i=0;i<cantIds;i++) {
+	for(i=0;i<cantIds;i++) {
 		if(existeID(ids[i])) 
 			insertarEnTabla(ids[i],(tipoid[i] == 1 ? "FLOAT" : "INTEGER"),"--",0,0);
 		
