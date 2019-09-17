@@ -84,10 +84,15 @@ imprimir			:		PRINT CTE_S	PYC	|
 leer				:		READ ID	PYC		;
 							
 							
-constante			:		CONST ID OP_ASIG varconstante PYC	|
-							CONST ID OP_ASIG CTE_S PYC	{insertarEnTabla(cadAux,"CONST_STR",yylval.str_val,0,0);}		;
-varconstante		:		CTE_E	|
-							CTE_R	;
+tiposoloid			: 		ID {memset( cadAux, '\0', 50 ); strcpy(cadAux,yylval.str_val);};							
+						
+constante			:		CONST tiposoloid OP_ASIG CTE_E PYC {insertarEnTabla(cadAux,"CONST_INT","",yylval.intval,0);}		|
+							CONST tiposoloid OP_ASIG CTE_R PYC {insertarEnTabla(cadAux,"CONST_REAL","",0,yylval.val);}			|
+							CONST tiposoloid OP_ASIG CTE_S PYC	{insertarEnTabla(cadAux,"CONST_STR",yylval.str_val,0,0);}	;
+							
+
+varconstante		:		CTE_E	{insertarEnTabla("","CONST_INT","--",yylval.intval,0);}	|
+							CTE_R	{insertarEnTabla("","CONST_REAL","--",0,yylval.val);}	;
 
 asignacion			:		ID OP_ASIG varconstante PYC |
 							ID OP_ASIG ID PYC			;
@@ -216,27 +221,56 @@ void insertarEnTabla(char* nombreSimbolo,char* tipoSimbolo,char* valorString,int
   FILE *archTS2 = fopen("ts.txt","a");
   char valor[20];
   char guionBajo[30]="_";
+  char nombre[50];
 
 	if(strcmp(tipoSimbolo,"FLOAT")==0 || strcmp(tipoSimbolo,"INTEGER")==0 || strcmp(tipoSimbolo,"STRING")==0)
-		fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombreSimbolo,tipoSimbolo,"--",strlen(nombreSimbolo));
-	else{
+		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo,tipoSimbolo,"--","");
 	
 	if(strcmp(tipoSimbolo,"CONST_INT") == 0){
 		sprintf(valor,"%d",valorInteger);
-		if(existeCTE((strcmp(nombreSimbolo, "") == 0 ? strcat(guionBajo,valor) : nombreSimbolo)) !=0 )
-			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valor,strlen(guionBajo)-1);
+		if(strcmp(nombreSimbolo, "") == 0)
+			strcpy(nombre, strcat(guionBajo, valor));
+		else
+			strcpy(nombre, nombreSimbolo);
+		
+		if(existeCTE(nombre) !=0 )
+			fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombre," ",valor,"");
 	}
-	else{
+	
 	if(strcmp(tipoSimbolo,"CONST_REAL") == 0){
 		sprintf(valor,"%f",valorFloat);
-		if(existeCTE(strcat(guionBajo,valor))!=0)
-			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valor,strlen(guionBajo)-1);
+		if(strcmp(nombreSimbolo, "") == 0)
+			strcpy(nombre, strcat(guionBajo, valor));
+		else
+			strcpy(nombre, nombreSimbolo);
+		
+		if(existeCTE(nombre) !=0 )
+			fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombre," ",valor,"");
 	}
-	else{
-	 if(strcmp(tipoSimbolo,"CONST_STR") == 0)
-		if(existeCTE(strcat(guionBajo,valorString))!=0)
-			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",guionBajo,tipoSimbolo,valorString,strlen(guionBajo)-1);
-	}}}
+	if(strcmp(tipoSimbolo,"CONST_STR") == 0) {
+		
+		if(strcmp(nombreSimbolo, "") == 0)
+			strcpy(nombre, strcat(guionBajo, valor));
+		else
+			strcpy(nombre, nombreSimbolo);
+		
+		strtok(valorString,";");
+		if(existeCTE(nombre) !=0 )
+			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombre," ",valorString,strlen(valorString)-1);
+		
+	}
+	/*if(strcmp(tipoSimbolo,"REAL_CONST") == 0) {
+		sprintf(valor,"%f",valorFloat);
+		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo," ", valor, "");
+	}
+	if(strcmp(tipoSimbolo,"INT_CONST") == 0) {
+		sprintf(valor,"%d",valorInteger);
+		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo," ",valor, "");
+	}
+	if(strcmp(tipoSimbolo,"STR_CONST") == 0) {
+		sprintf(valor,"%f",valorFloat);
+		fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombreSimbolo," ",valorString,strlen(valorString)-1);
+	}*/
 
 	fclose(archTS2);
 

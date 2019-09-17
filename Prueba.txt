@@ -12,6 +12,8 @@ ENDVAR
 
 
 CONST constante1 = 123;
+CONST constante2 = .5;
+CONST constante3 = "HOLA";
 variable1=variable2;
 entero1=5;
 entero2=50;
