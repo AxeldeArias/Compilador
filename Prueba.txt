@@ -1,7 +1,9 @@
 VAR
---/  asdasd /--
---/asdasdaa--/1234 /--/--
---/asdasdasd--/--/--/asdasds/--/-- /--/--
+--/  as	d23 . ?
+
+asd/--
+--/aaa--/bbb/--ccc/--
+
 	[Float]:[aa, bb];
 	[Integer, Float, Float]:[b,a,d];
 	[Integer, Integer, Integer, Float, Float]:[p1,p2,p3,p4];
@@ -17,7 +19,7 @@ CONST constante3 = "HOLA";
 variable1=variable2;
 entero1=5;
 entero2=50;
-float1=2.3;
+float1=2147483647.0;
 float2=2.;
 float3=.5;
 CONST string1="ASD ASD AAASSD";
@@ -58,3 +60,26 @@ REPEAT
 	float7=3;
 	inte3=5;
 UNTIL(a<b);
+
+IF(a==6) {
+	PRINT "1";
+}
+ELSE {
+	PRINT "2";
+}
+
+IF(j==r) {
+	PRINT "3";
+	IF(123>asd){
+		PRINT "4";
+	}
+	ELSE {
+		IF(t>=3){
+			PRINT "5";
+			PRINT "5b";
+		}
+	}
+}
+ELSE {
+	PRINT "4";
+}

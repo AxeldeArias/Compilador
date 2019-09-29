@@ -11,16 +11,18 @@ h1                            INTEGER                       --
 h2                            FLOAT                         --                              
 constante1                                                  123                             
 constante2                                                  0.500000                        
-constante3                                                  "HOLA"                        05
+constante3                                                  "HOLA"                        04
 _5                                                          5                               
 _50                                                         50                              
-_2.300000                                                   2.300000                        
+_2147483647.000000                                          2147483647.000000               
 _2.000000                                                   2.000000                        
 _0.500000                                                   0.500000                        
-string1                                                     "ASD ASD AAASSD"              15
+string1                                                     "ASD ASD AAASSD"              14
 _25                                                         25                              
 _3                                                          3                               
 _52                                                         52                              
 _125                                                        125                             
-constante5                                                  "1113333333"                  11
+constante5                                                  "1113333333"                  10
 _24                                                         24                              
+_6                                                          6                               
+_123                                                        123                             

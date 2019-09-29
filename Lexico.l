@@ -15,12 +15,14 @@ void insertarEnTabla(char*,char*,char*,int,double);
 
 DIGITO			[0-9]
 LETRA			[a-zA-Z]
+CARACTER		[^"-""/"]
+
 ID				{LETRA}({LETRA}|{DIGITO}|_)*
-COMENTARIO  	"--/".*"/--"
+COMENTARIO  	("--/")({CARACTER})*("--/"({CARACTER})*"/--")?({CARACTER})*("/--")
 
 
 CTE_E		(-?)([1-9])({DIGITO})*
-CTE_R		(-?)([1-9])*"."({DIGITO})*
+CTE_R		(-?)({DIGITO})*"."({DIGITO})*
 CTE_S 		\".*\"
 
 %%
@@ -28,7 +30,6 @@ CTE_S 		\".*\"
 "UNTIL"			{ printf("UNTIL");			return C_REPEAT_C; }
 "IF"			{ printf("IF");				return C_IF_A; }
 "ELSE"			{ printf("ELSE");			return C_IF_E; }
-"ENDIF"			{ printf("ENDIF");			return C_IF_C; }
 	
 "FILTER"		{ printf("FILTER");			return C_FILTER; }
 "_"				{ printf("_");				return C_FILTER_REFENTEROS; }

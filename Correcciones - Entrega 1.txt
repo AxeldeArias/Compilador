@@ -1,4 +1,0 @@
-Validacion de cotas FLOAT - El error muestra que se produce en un entero
-Comentarios Anidados - Corregir
-Longitud en ctes en ts - Cuenta un caracter de mas
-If con ELSE - Corregir

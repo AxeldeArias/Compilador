@@ -33,7 +33,7 @@ char *str_val;
 }
 
 %token <str_val>ID <int>CTE_E <double>CTE_R <str_val>CTE_S
-%token C_REPEAT_A C_REPEAT_C C_IF_A C_IF_E C_IF_C
+%token C_REPEAT_A C_REPEAT_C C_IF_A C_IF_E
 %token C_FILTER C_FILTER_REFENTEROS
 %token PRINT READ
 %token VAR ENDVAR CONST INTEGER FLOAT STRING
@@ -97,7 +97,8 @@ varconstante		:		CTE_E	{insertarEnTabla("","CONST_INT","--",yylval.intval,0);}	|
 asignacion			:		ID OP_ASIG varconstante PYC |
 							ID OP_ASIG ID PYC			;
 							
-decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C ;
+decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C |
+							C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C C_IF_E LLAVE_A bloqprograma LLAVE_C ;
 /* VA CON ELSE? */
 
 condicion			:		comparacion											|
@@ -256,7 +257,7 @@ void insertarEnTabla(char* nombreSimbolo,char* tipoSimbolo,char* valorString,int
 		
 		strtok(valorString,";");
 		if(existeCTE(nombre) !=0 )
-			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombre," ",valorString,strlen(valorString)-1);
+			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombre," ",valorString,strlen(valorString)-2);
 		
 	}
 	/*if(strcmp(tipoSimbolo,"REAL_CONST") == 0) {
