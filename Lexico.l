@@ -62,12 +62,12 @@ CTE_S 		\".*\"
 ";"			{ printf(";");				return PYC; }
 ":"			{ printf(":");				return DOSPUNTOS; }
 
-"=="		{ printf("=="); 	return OP_COMPARACION;}
-"!=="		{ printf("!=="); 	return OP_COMPARACION;}
-"<"			{ printf("<"); 		return OP_COMPARACION;}
-"<="		{ printf("<="); 	return OP_COMPARACION;}
-">"			{ printf(">"); 		return OP_COMPARACION;}
-">="		{ printf(">=");		return OP_COMPARACION;}
+"=="		{ printf("=="); 	return OP_IGUAL;}
+"!=="		{ printf("!=="); 	return OP_DISTINTO;}
+"<"			{ printf("<"); 		return OP_MENOR;}
+"<="		{ printf("<="); 	return OP_MENORIGUAL;}
+">"			{ printf(">"); 		return OP_MAYOR;}
+">="		{ printf(">=");		return OP_MAYORIGUAL;}
 "AND"		{ printf("AND");	return OP_LOGICO;}
 "OR"		{ printf("OR");		return OP_LOGICO;}
 "!"			{ printf("!");		return OP_NEGACION; }
