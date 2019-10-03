@@ -23,7 +23,7 @@ int cantIds = 0;
 int canttipos = 0;
 int existeCTE(char *);
 void insertarIds();
-%} 
+%}
 
 
 %union {
@@ -39,7 +39,7 @@ char *str_val;
 %token VAR ENDVAR CONST INTEGER FLOAT STRING
 %token OP_ASIG OP_SUMARESTA OP_MULDIV
 %token PARENTESIS_A PARENTESIS_C LLAVE_A LLAVE_C CORCHETE_A CORCHETE_C COMA PYC DOSPUNTOS
-%token OP_COMPARACION OP_LOGICO OP_NEGACION
+%token OP_IGUAL OP_DISTINTO OP_MENOR OP_MENORIGUAL OP_MAYOR OP_MAYORIGUAL OP_LOGICO OP_NEGACION
 
 
 %%
@@ -63,7 +63,7 @@ listatipos			:		listatipos COMA listadato|
 
 listadato			:		INTEGER {tipoid[canttipos++] = 0; }	|
 							FLOAT	{tipoid[canttipos++] = 1; }	;
-							
+
 listavariables		:		listavariables COMA ID {strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;}|
 							ID{strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;};
 /* FIN REGLAS BLOQUE DE DECLARACIONES */
@@ -73,30 +73,30 @@ bloqprograma		:		bloqprograma sentencia ;
 bloqprograma		:		sentencia ;
 
 sentencia			:		constante 	| /* DEFINICION DE CONSTANTE */
-							asignacion	| 
+							asignacion	|
 							decision	| /* IF */
 							bucle		| /* REPEAT */
 							imprimir	| /* PRINT */
 							leer		; /* READ */
-							
+
 imprimir			:		PRINT CTE_S	PYC	|
 							PRINT ID PYC	;
 leer				:		READ ID	PYC		;
-							
-							
-tiposoloid			: 		ID {memset( cadAux, '\0', 50 ); strcpy(cadAux,yylval.str_val);};							
-						
+
+
+tiposoloid			: 		ID {memset( cadAux, '\0', 50 ); strcpy(cadAux,yylval.str_val);};
+
 constante			:		CONST tiposoloid OP_ASIG CTE_E PYC {insertarEnTabla(cadAux,"CONST_INT","",yylval.intval,0);}		|
 							CONST tiposoloid OP_ASIG CTE_R PYC {insertarEnTabla(cadAux,"CONST_REAL","",0,yylval.val);}			|
 							CONST tiposoloid OP_ASIG CTE_S PYC	{insertarEnTabla(cadAux,"CONST_STR",yylval.str_val,0,0);}	;
-							
+
 
 varconstante		:		CTE_E	{insertarEnTabla("","CONST_INT","--",yylval.intval,0);}	|
 							CTE_R	{insertarEnTabla("","CONST_REAL","--",0,yylval.val);}	;
 
 asignacion			:		ID OP_ASIG varconstante PYC |
 							ID OP_ASIG ID PYC			;
-							
+
 decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C |
 							C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C C_IF_E LLAVE_A bloqprograma LLAVE_C ;
 /* VA CON ELSE? */
@@ -106,29 +106,31 @@ condicion			:		comparacion											|
 							comparacion OP_LOGICO comparacion					;
 
 
-comparacion			:		expresion OP_COMPARACION expresion	|
-							filtro OP_COMPARACION expresion		;
-							
+comparacion			:		expresion op_comparacion expresion	|
+							filtro op_comparacion expresion		;
+
 expresion			:		termino							|
 							expresion OP_SUMARESTA termino	;
-							
+
 termino				:		factor						|
 							termino OP_MULDIV factor	;
-							
+
 factor				:		ID				|
 							varconstante	|
 							PARENTESIS_A expresion PARENTESIS_C;
-							
+
 bucle				:		C_REPEAT_A bloqprograma C_REPEAT_C PARENTESIS_A condicion PARENTESIS_C PYC ;
 
 filtro				:		C_FILTER PARENTESIS_A condfiltro COMA CORCHETE_A listavariables CORCHETE_C PARENTESIS_C	;
 
-condfiltro			:		C_FILTER_REFENTEROS OP_COMPARACION expresion |
-							C_FILTER_REFENTEROS OP_COMPARACION expresion OP_LOGICO C_FILTER_REFENTEROS OP_COMPARACION expresion ;
+condfiltro			:		C_FILTER_REFENTEROS op_comparacion expresion |
+							C_FILTER_REFENTEROS op_comparacion expresion OP_LOGICO C_FILTER_REFENTEROS op_comparacion expresion ;
+
+op_comparacion      :       OP_MENOR | OP_MENORIGUAL | OP_MAYOR | OP_MAYORIGUAL | OP_IGUAL | OP_DISTINTO;
 
 %%
 int main(int argc,char *argv[]){
-	
+
   FILE *archTS = fopen("ts.txt","wt");
 	if ((yyin = fopen(argv[1], "rt")) == NULL){
 		printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
@@ -138,7 +140,7 @@ int main(int argc,char *argv[]){
     fclose(archTS);
 		yyparse();
 	}
-	
+
 	fclose(yyin);
 	return 0;
 }
@@ -155,17 +157,17 @@ void insertarIds(){
 		cantIds = canttipos;
 	}
 	for(i=0;i<cantIds;i++) {
-		if(existeID(ids[i])) 
+		if(existeID(ids[i]))
 			insertarEnTabla(ids[i],(tipoid[i] == 1 ? "FLOAT" : "INTEGER"),"--",0,0);
-		
+
 	}
-	
+
 	memset( ids, '\0', MAX_IDS );
 	memset( tipoid, '\0', MAX_IDS );
 	cantIds = 0;
 	canttipos = 0;
-		
-		
+
+
 }
 
 int existeID(char *id){
@@ -173,7 +175,7 @@ int existeID(char *id){
   char linea[100];
   char *aux,*ptr;
   char nombre[30];
-  
+
   fgets(linea,sizeof(linea),archTS2);
   while(fgets(linea,sizeof(linea),archTS2)!=NULL)
   {
@@ -226,39 +228,39 @@ void insertarEnTabla(char* nombreSimbolo,char* tipoSimbolo,char* valorString,int
 
 	if(strcmp(tipoSimbolo,"FLOAT")==0 || strcmp(tipoSimbolo,"INTEGER")==0 || strcmp(tipoSimbolo,"STRING")==0)
 		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo,tipoSimbolo,"--","");
-	
+
 	if(strcmp(tipoSimbolo,"CONST_INT") == 0){
 		sprintf(valor,"%d",valorInteger);
 		if(strcmp(nombreSimbolo, "") == 0)
 			strcpy(nombre, strcat(guionBajo, valor));
 		else
 			strcpy(nombre, nombreSimbolo);
-		
+
 		if(existeCTE(nombre) !=0 )
 			fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombre," ",valor,"");
 	}
-	
+
 	if(strcmp(tipoSimbolo,"CONST_REAL") == 0){
 		sprintf(valor,"%f",valorFloat);
 		if(strcmp(nombreSimbolo, "") == 0)
 			strcpy(nombre, strcat(guionBajo, valor));
 		else
 			strcpy(nombre, nombreSimbolo);
-		
+
 		if(existeCTE(nombre) !=0 )
 			fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombre," ",valor,"");
 	}
 	if(strcmp(tipoSimbolo,"CONST_STR") == 0) {
-		
+
 		if(strcmp(nombreSimbolo, "") == 0)
 			strcpy(nombre, strcat(guionBajo, valor));
 		else
 			strcpy(nombre, nombreSimbolo);
-		
+
 		strtok(valorString,";");
 		if(existeCTE(nombre) !=0 )
 			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombre," ",valorString,strlen(valorString)-2);
-		
+
 	}
 	/*if(strcmp(tipoSimbolo,"REAL_CONST") == 0) {
 		sprintf(valor,"%f",valorFloat);
