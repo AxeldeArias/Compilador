@@ -1,28 +1,16 @@
 NOMBRE				TIPO				VALOR			LONGITUD
-aa                            FLOAT                         --                              
-b                             INTEGER                       --                              
-a                             FLOAT                         --                              
-d                             FLOAT                         --                              
-p1                            INTEGER                       --                              
-p2                            INTEGER                       --                              
-p3                            INTEGER                       --                              
-p4                            FLOAT                         --                              
-h1                            INTEGER                       --                              
-h2                            FLOAT                         --                              
-constante1                                                  123                             
-constante2                                                  0.500000                        
-constante3                                                  "HOLA"                        04
-_5                                                          5                               
-_50                                                         50                              
-_2147483647.000000                                          2147483647.000000               
-_2.000000                                                   2.000000                        
-_0.500000                                                   0.500000                        
-string1                                                     "ASD ASD AAASSD"              14
-_25                                                         25                              
-_3                                                          3                               
-_52                                                         52                              
-_125                                                        125                             
-constante5                                                  "1113333333"                  10
-_24                                                         24                              
-_6                                                          6                               
-_123                                                        123                             
+aa                            FLOAT                         --                            
+b                             INTEGER                       --                            
+a                             FLOAT                         --                            
+d                             FLOAT                         --                            
+p1                            INTEGER                       --                            
+p2                            INTEGER                       --                            
+p3                            INTEGER                       --                            
+p4                            FLOAT                         --                            
+h1                            INTEGER                       --                            
+h2                            FLOAT                         --                            
+constante1                    FLOAT                         123                           
+constante2                    FLOAT                         0.5                           
+constante3                    FLOAT                         "HOLA"                        4
+string1                       FLOAT                         "ASD ASD AAASSD"              14
+constante5                    FLOAT                         "1113333333"                  10

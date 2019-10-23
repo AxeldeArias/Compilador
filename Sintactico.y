@@ -1,29 +1,102 @@
 %{
+/******** INCLUDES **********/
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
 #include <string.h>
+#include "inc\primitivas_pila_dinamica.c"
 #include "y.tab.h"
+/****************************/
 
+
+/****** Estructuras pila  *********/
+t_pila pilaPos;
+t_pila pilaRepeat;
+t_pila pilaFiltro;
+/************************/
+
+/****** DEFINES *********/
 #define MAX_IDS 20
+/************************/
 
+/****** FUNCIONES *********/
+int crearTerceto(char *operador, char *operando1, char *operando2);
+void mostrarTerceto();
+void modificarTerceto(int posicion, int inc);
+char* negarSalto(char* operadorSalto);
+/************************/
 
+/****** VARIABLES GLOBALES *********/
 int yystopparser=0;
-
 FILE *yyin;
-char tituloTS[] = "NOMBRE\t\t\t\tTIPO\t\t\t\tVALOR\t\t\tLONGITUD\n";
-void insertarEnTabla(char*,char*,char*,int,double);
-char cadAux[50];
-char* ptr;
+/***********************************/
 
-int existeID(char *);
+/********* VARIABLES TERCETO ********/
+typedef struct
+{
+   int indice;      //INDICE DE TERCETO
+   char dato1[40];  //OPERACION
+   char dato2[40];  //OPERADOR1
+   char dato3[40];  //OPERADOR2
+} regTerceto;
+
+regTerceto terceto;
+regTerceto tablaTerceto[2048];
+
+int numeroTerceto = 0;
+char valorConstante[50];
+char aux1[31], aux2[31], opSalto[6];
+
+int indice_constante;
+int indice_termino;
+int indice_factor;
+int indice_expresion;
+
+int indice_condicion;
+int indice_condicionI;
+int indice_condicionD;
+
+int indice_comparacion;
+int indice_comparacionD;
+int indice_comparacionI;
+
+int indice_repeat;
+int indice_filtro;
+
+int indice_out;
+int indice_in;
+
+int indice_if;
+/***********************************/
+
+/********* VARIABLES IDS ********/
+typedef struct
+{
+   char nombre[31];
+   int tipo;
+   char valor[31];  
+   char longitud[5];
+} regId;
+
+regId tablaId[2048];
+int numeroId = 0;
+
+char cadAux[50];
 char ids[MAX_IDS][32];
 int tipoid[MAX_IDS];
 int cantIds = 0;
 int canttipos = 0;
-int existeCTE(char *);
-void insertarIds();
-%} 
+
+void insertarIDs();
+void mostrarID();
+int existeID(char* id);
+void insertarConstante(char* nombre, int tipo, char* valor);
+void exportarTablas();
+
+/***********************************/
+
+
+%}
 
 
 %union {
@@ -31,15 +104,15 @@ int intval;
 double val;
 char *str_val;
 }
-
+%start start
 %token <str_val>ID <int>CTE_E <double>CTE_R <str_val>CTE_S
 %token C_REPEAT_A C_REPEAT_C C_IF_A C_IF_E
 %token C_FILTER C_FILTER_REFENTEROS
 %token PRINT READ
 %token VAR ENDVAR CONST INTEGER FLOAT STRING
-%token OP_ASIG OP_SUMARESTA OP_MULDIV
+%token OP_ASIG OP_SUMA OP_RESTA OP_MUL OP_DIV
 %token PARENTESIS_A PARENTESIS_C LLAVE_A LLAVE_C CORCHETE_A CORCHETE_C COMA PYC DOSPUNTOS
-%token OP_COMPARACION OP_LOGICO OP_NEGACION
+%token OP_IGUAL OP_DISTINTO OP_MENOR OP_MENORIGUAL OP_MAYOR OP_MAYORIGUAL OP_LOGICO_AND OP_LOGICO_OR OP_NEGACION
 
 
 %%
@@ -50,95 +123,324 @@ start				:		archivo ; /* SIMBOLO INICIAL */
 	- DECLARACIONES Y CUERPO DE PROGRAMA
 	- CUERPO DE PROGRAMA
 */
-archivo				:		{ printf("\t\t---INICIO PRINCIPAL DEL PROGRAMA---\n\n"); } VAR { printf("INICIO DECLARACIONES\n"); } bloqdeclaracion ENDVAR { printf("FIN DECLARACIONES\n\n"); } { printf("INICIO PROGRAMA\n"); } bloqprograma { printf("\n\n\t\t---FIN PRINCIPAL DEL PROGRAMA---\n\n"); };
+archivo				:		VAR bloqdeclaracion ENDVAR bloqprograma {exportarTablas();} ;
 
 /* REGLAS BLOQUE DE DECLARACIONES */
 bloqdeclaracion		:		bloqdeclaracion declaracion ;
 bloqdeclaracion		:		declaracion ;
 
-declaracion			:		CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC {insertarIds();};
+declaracion			:		CORCHETE_A listatipos CORCHETE_C DOSPUNTOS CORCHETE_A listavariables CORCHETE_C PYC {insertarIDs();};
 
 listatipos			:		listatipos COMA listadato|
 							listadato;
 
-listadato			:		INTEGER {tipoid[canttipos++] = 0; }	|
-							FLOAT	{tipoid[canttipos++] = 1; }	;
-							
-listavariables		:		listavariables COMA ID {strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;}|
-							ID{strcpy(cadAux,yylval.str_val);ptr = strtok(cadAux," ,:");strcpy(ids[cantIds],ptr);cantIds++;};
+listadato			:		INTEGER {tipoid[canttipos++] = INTEGER; }	|
+							FLOAT	{tipoid[canttipos++] = FLOAT; }	;
+
+listavariables		:		listavariables COMA ID {strcpy(cadAux,yylval.str_val); strcpy(ids[cantIds], strtok(cadAux," ,:"));cantIds++;}|
+							ID{strcpy(cadAux,yylval.str_val); strcpy(ids[cantIds], strtok(cadAux," ,:"));cantIds++;};
 /* FIN REGLAS BLOQUE DE DECLARACIONES */
 
 /* REGLAS BLOQUE DE CUERPO DE PROGRAMA */
+
+
+start				:		bloqprograma ; /* SIMBOLO INICIAL */
+
 bloqprograma		:		bloqprograma sentencia ;
 bloqprograma		:		sentencia ;
 
-sentencia			:		constante 	| /* DEFINICION DE CONSTANTE */
-							asignacion	| 
-							decision	| /* IF */
-							bucle		| /* REPEAT */
-							imprimir	| /* PRINT */
-							leer		; /* READ */
+sentencia			:		constante	|
+							asignacion 	|
+							decision	|
+							bucle		|
+							leer		|
+							imprimir	|
+							filtro		; /*SACAR*/
 							
-imprimir			:		PRINT CTE_S	PYC	|
-							PRINT ID PYC	;
-leer				:		READ ID	PYC		;
-							
-							
-tiposoloid			: 		ID {memset( cadAux, '\0', 50 ); strcpy(cadAux,yylval.str_val);};							
-						
-constante			:		CONST tiposoloid OP_ASIG CTE_E PYC {insertarEnTabla(cadAux,"CONST_INT","",yylval.intval,0);}		|
-							CONST tiposoloid OP_ASIG CTE_R PYC {insertarEnTabla(cadAux,"CONST_REAL","",0,yylval.val);}			|
-							CONST tiposoloid OP_ASIG CTE_S PYC	{insertarEnTabla(cadAux,"CONST_STR",yylval.str_val,0,0);}	;
-							
+tiposoloid			: 		ID {strcpy(aux1, yylval.str_val);};
 
-varconstante		:		CTE_E	{insertarEnTabla("","CONST_INT","--",yylval.intval,0);}	|
-							CTE_R	{insertarEnTabla("","CONST_REAL","--",0,yylval.val);}	;
+constante			:		CONST tiposoloid OP_ASIG CTE_E 
+							{	itoa(yylval.intval, valorConstante, 10);} PYC 
+							{	indice_constante = crearTerceto("=", aux1, valorConstante);
+								insertarConstante(aux1, CTE_E, valorConstante);
+							}		|
+							CONST tiposoloid OP_ASIG CTE_R 
+							{	gcvt(yylval.val, 10, valorConstante);} PYC 
+							{	indice_constante = crearTerceto("=", aux1, valorConstante);
+								insertarConstante(aux1, CTE_R, valorConstante);
+							}		|
+							CONST tiposoloid OP_ASIG CTE_S 
+							{	strcpy(valorConstante, yylval.str_val);} PYC 
+							{	indice_constante = crearTerceto("=", aux1, valorConstante);
+								insertarConstante(aux1, CTE_S, valorConstante);
+							}		;
 
-asignacion			:		ID OP_ASIG varconstante PYC |
-							ID OP_ASIG ID PYC			;
+asignacion			:		ID	
+							{	//if(existeID(yylval.str_val))
+									strcpy(aux1, yylval.str_val);}	OP_ASIG tipoasig PYC {crearTerceto("=", aux1, valorConstante);
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}	;
+tipoasig			:		varconstante 										|
+							ID	
+							{	//if(existeID(yylval.str_val))
+									strcpy(valorConstante, yylval.str_val);
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}		;
 							
-decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C |
-							C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C C_IF_E LLAVE_A bloqprograma LLAVE_C ;
-/* VA CON ELSE? */
-
-condicion			:		comparacion											|
-							OP_NEGACION PARENTESIS_A comparacion PARENTESIS_C	|
-							comparacion OP_LOGICO comparacion					;
-
-
-comparacion			:		expresion OP_COMPARACION expresion	|
-							filtro OP_COMPARACION expresion		;
+varconstante		:		CTE_E	{itoa(yylval.intval, valorConstante, 10);}	|
+							CTE_R	{gcvt(yylval.val, 10, valorConstante);} 	;
 							
-expresion			:		termino							|
-							expresion OP_SUMARESTA termino	;
+decision			:		C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C 
+							{	modificarTerceto(desapilar(&pilaPos), 0);
+							}	|
+							C_IF_A PARENTESIS_A condicion PARENTESIS_C LLAVE_A bloqprograma LLAVE_C 
+							{	modificarTerceto(desapilar(&pilaPos), 1);
+								indice_if = crearTerceto("JMP", "", "");
+								apilar(&pilaPos, indice_if);
+							} 
+							C_IF_E LLAVE_A bloqprograma LLAVE_C	{modificarTerceto(desapilar(&pilaPos), 0);}	;
 							
-termino				:		factor						|
-							termino OP_MULDIV factor	;
+bucle				:		C_REPEAT_A
+							{	indice_repeat = crearTerceto("ETQ_REPEAT", "", "");
+								apilar(&pilaRepeat, indice_repeat);
 							
-factor				:		ID				|
-							varconstante	|
-							PARENTESIS_A expresion PARENTESIS_C;
-							
-bucle				:		C_REPEAT_A bloqprograma C_REPEAT_C PARENTESIS_A condicion PARENTESIS_C PYC ;
+							}
+							bloqprograma C_REPEAT_C PARENTESIS_A condicion PARENTESIS_C PYC 
+							{	
+								modificarTerceto(numeroTerceto-1, (-1)*(numeroTerceto - desapilar(&pilaRepeat) ));
+								
+							};							
 
-filtro				:		C_FILTER PARENTESIS_A condfiltro COMA CORCHETE_A listavariables CORCHETE_C PARENTESIS_C	;
+condicion			:		comparacion
+							{	sprintf(aux1, "[ %d ]", indice_comparacion);
+								//itoa(indice_comparacion, aux1, 10);
+								indice_condicion = crearTerceto(opSalto, aux1, "");
+								apilar(&pilaPos, indice_condicion);
+								//mostrarPila(pilaPos);
+							}	|
+							OP_NEGACION PARENTESIS_A comparacion PARENTESIS_C
+							{	sprintf(aux1, "[ %d ]", indice_comparacion);
+								//itoa(indice_comparacion, aux1, 10);
+								indice_condicion = crearTerceto(negarSalto(opSalto), aux1, "");
+								apilar(&pilaPos, indice_condicion);
+								//mostrarPila(pilaPos);
+							}	|
+							comparacion_i OP_LOGICO_AND comparacion_d
+							{	sprintf(aux1, "[ %d ]", indice_comparacionI);
+								sprintf(aux2, "[ %d ]", indice_comparacionD);
+								
+								//itoa(indice_comparacionI, aux1, 10);
+								//itoa(indice_comparacionD, aux2, 10);
+								
+								indice_condicion = crearTerceto("AND", aux1, aux2);
+								
+								sprintf(aux1, "[ %d ]", numeroTerceto);
+								//itoa(numeroTerceto, aux1, 10);
+								
+								indice_condicion = crearTerceto("JZ", aux1, "");
+								apilar(&pilaPos, indice_condicion);
+								//mostrarPila(pilaPos);
+							}	|
+							comparacion_i OP_LOGICO_OR comparacion_d 
+							{	sprintf(aux1, "[ %d ]", indice_comparacionI);
+								sprintf(aux2, "[ %d ]", indice_comparacionD);
+								
+								//itoa(indice_comparacionI, aux1, 10);
+								//itoa(indice_comparacionD, aux2, 10);
+								
+								indice_condicion = crearTerceto("AND", aux1, aux2);
+								
+								sprintf(aux1, "[ %d ]", numeroTerceto);
+								//itoa(numeroTerceto, aux1, 10);
+								
+								indice_condicion = crearTerceto("JZ", aux1, "");
+								apilar(&pilaPos, indice_condicion);
+								//mostrarPila(pilaPos);
+							}	;
 
-condfiltro			:		C_FILTER_REFENTEROS OP_COMPARACION expresion |
-							C_FILTER_REFENTEROS OP_COMPARACION expresion OP_LOGICO C_FILTER_REFENTEROS OP_COMPARACION expresion ;
+comparacion_i		:		comparacion { indice_comparacionI = indice_comparacion; } ;
+comparacion_d		:		comparacion { indice_comparacionD = indice_comparacion; } ;
+
+
+comparacion			:		expresion_i op_comparacion expresion_d	
+							{	sprintf(aux1, "[ %d ]", indice_condicionI);
+								sprintf(aux2, "[ %d ]", indice_condicionD);
+								
+								//itoa(indice_condicionI, aux1, 10);
+								//itoa(indice_condicionD, aux2, 10);
+								
+								indice_comparacion = crearTerceto("CMP", aux1, aux2);
+							}	|
+							filtro op_comparacion expresion_d
+							{	sprintf(aux2, "[ %d ]", indice_condicionD);
+							
+								//itoa(indice_condicionD, aux2, 10);
+								
+								indice_comparacion = crearTerceto("CMP", "_auxFiltro", aux2);
+							}	;
+							
+							
+expresion_i			: 		expresion { indice_condicionI = indice_expresion; };
+expresion_d			:		expresion { indice_condicionD = indice_expresion; };
+
+op_comparacion      :       OP_MENOR {strcpy(opSalto, "JB");} 		| 
+							OP_MENORIGUAL {strcpy(opSalto, "JBE");}	| 
+							OP_MAYOR {strcpy(opSalto, "JA");}		| 
+							OP_MAYORIGUAL {strcpy(opSalto, "JAE");}	| 
+							OP_IGUAL {strcpy(opSalto, "JE");}		| 
+							OP_DISTINTO	{strcpy(opSalto, "JNE");}	;
+
+
+
+expresion			:		termino	{ indice_expresion = indice_termino; }		|
+							expresion OP_SUMA termino 
+							{	sprintf(aux1, "[ %d ]", indice_expresion);
+								sprintf(aux2, "[ %d ]", indice_termino);
+							
+								//itoa(indice_expresion, aux1, 10);
+								//itoa(indice_termino, aux2, 10);
+							
+								indice_expresion = crearTerceto("ADD", aux1, aux2); 
+							}		|
+							expresion OP_RESTA termino 
+							{	sprintf(aux1, "[ %d ]", indice_expresion);
+								sprintf(aux2, "[ %d ]", indice_termino);
+								
+								//itoa(indice_expresion, aux1, 10);
+								//itoa(indice_termino, aux2, 10);
+							
+								indice_expresion = crearTerceto("SUB", aux1, aux2); 
+							}		;
+
+termino				:		factor { indice_termino = indice_factor; }				|
+							termino OP_MUL factor 
+							{
+								sprintf(aux1, "[ %d ]", indice_termino);
+								sprintf(aux2, "[ %d ]", indice_factor);
+								
+								//itoa(indice_termino, aux1, 10);
+								//itoa(indice_factor, aux2, 10);
+								
+								indice_termino = crearTerceto("MUL", aux1, aux2);
+							}	|
+							termino OP_DIV factor
+							{	sprintf(aux1, "[ %d ]", indice_termino);
+								sprintf(aux2, "[ %d ]", indice_factor);
+							
+								//itoa(indice_termino, aux1, 10);
+								//itoa(indice_factor, aux2, 10);
+								
+								indice_termino = crearTerceto("DIV", aux1, aux2);
+							}	;
+
+factor				:		ID 
+							{	//if(existeID(yylval.str_val))
+									indice_factor = crearTerceto(yylval.str_val,"","");
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}				|
+							varconstante {indice_factor = crearTerceto(valorConstante, "", "");}	|
+							PARENTESIS_A expresion PARENTESIS_C {indice_factor = indice_expresion;}	;
+
+
+
+imprimir			:		PRINT CTE_S {
+								strcpy(aux1, yylval.str_val);
+								indice_out = crearTerceto("output", aux1, "");
+							}	PYC	|
+							PRINT ID { 
+								//if(existeID(yylval.str_val))
+									strcpy(aux1, yylval.str_val);
+									indice_out = crearTerceto("output", aux1, "");
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}	PYC	;
+leer				:		READ ID	{
+								//if(existeID(yylval.str_val))
+									strcpy(aux1, yylval.str_val);
+									indice_in = crearTerceto("input", aux1, "");
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}	PYC	;
+
+filtro				:		C_FILTER PARENTESIS_A condfiltro COMA CORCHETE_A listvarfiltro CORCHETE_C PARENTESIS_C
+							{	while(!pila_vacia(&pilaFiltro))
+								{
+									modificarTerceto(desapilar(&pilaFiltro), 0);
+								}
+							
+							}	;
+
+condfiltro			:		C_FILTER_REFENTEROS op_comparacion expresion ;
+/*							C_FILTER_REFENTEROS op_comparacion expresion_i OP_LOGICO_AND C_FILTER_REFENTEROS op_comparacion expresion_d |
+							C_FILTER_REFENTEROS op_comparacion expresion_i OP_LOGICO_OR C_FILTER_REFENTEROS op_comparacion expresion_d ;
+*/
+listvarfiltro		:		listvarfiltro COMA ID 
+							{	//if(existeID(yylval.str_val))
+									strcpy(aux1, yylval.str_val);
+									indice_filtro = crearTerceto(aux1, "", "");
+								
+									sprintf(aux1, "[ %d ]", indice_expresion);
+									sprintf(aux2, "[ %d ]", numeroTerceto-1);
+									
+									//itoa(indice_expresion, aux1, 10);
+									//itoa((numeroTerceto-1), aux2, 10);
+									crearTerceto("CMP", aux1, aux2);
+								
+									sprintf(aux1, "[ %d ]", numeroTerceto+3);
+									
+									//itoa((numeroTerceto+3), aux1, 10);
+									crearTerceto(negarSalto(opSalto), aux1, "");
+								
+									sprintf(aux1, "[ %d ]", numeroTerceto-3);
+									
+									//itoa((numeroTerceto-3), aux1, 10);
+									crearTerceto("=", "_auxFiltro", aux1);
+									crearTerceto("JMP", "", "");
+									apilar(&pilaFiltro, numeroTerceto-1);							
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}	|
+							ID	
+							{	//if(existeID(yylval.str_val))
+									strcpy(aux1, yylval.str_val);
+									indice_filtro = crearTerceto(aux1, "", "");
+								
+									sprintf(aux1, "[ %d ]", indice_expresion);
+									sprintf(aux2, "[ %d ]", numeroTerceto-1);
+									
+									//itoa(indice_expresion, aux1, 10);
+									//itoa((numeroTerceto-1), aux2, 10);
+									crearTerceto("CMP", aux1, aux2);
+								
+									sprintf(aux1, "[ %d ]", numeroTerceto+3);
+
+									//itoa((numeroTerceto+3), aux1, 10);
+									crearTerceto(negarSalto(opSalto), aux1, "");
+								
+									sprintf(aux1, "[ %d ]", numeroTerceto-3);
+									
+									//itoa((numeroTerceto-3), aux1, 10);
+									crearTerceto("=", "_auxFiltro", aux1);
+									crearTerceto("JMP", "", "");
+									apilar(&pilaFiltro, numeroTerceto-1);
+								/*SINO ERROR PORQUE NO EXISTE*/
+							}	;
 
 %%
 int main(int argc,char *argv[]){
 	
-  FILE *archTS = fopen("ts.txt","wt");
 	if ((yyin = fopen(argv[1], "rt")) == NULL){
 		printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
-	}
-	else{
-	fwrite(tituloTS,sizeof(char), sizeof(tituloTS)-1, archTS);
-    fclose(archTS);
-		yyparse();
+		return 0;
 	}
 	
+	/* CREAR PILAS */
+	crearPila(&pilaPos);
+	crearPila(&pilaRepeat);
+	crearPila(&pilaFiltro);
+	/* *********** */
+	
+	
+	
+	yyparse();
+
 	fclose(yyin);
 	return 0;
 }
@@ -149,132 +451,155 @@ int yyerror(void){
 	exit (1);
 }
 
-void insertarIds(){
-	int i;
+
+int crearTerceto(char *operador, char *operando1, char *operando2)
+{
+	tablaTerceto[numeroTerceto].indice = numeroTerceto;
+	
+	strcpy(tablaTerceto[numeroTerceto].dato1, operador);
+	strcpy(tablaTerceto[numeroTerceto].dato2, operando1);
+	strcpy(tablaTerceto[numeroTerceto].dato3, operando2);
+	//printf("TERCERTO: %d - OPERADOR: %s - OPERANDO1: %s - OPERANDO2: %s\n", tablaTerceto[numeroTerceto].indice, tablaTerceto[numeroTerceto].dato1, tablaTerceto[numeroTerceto].dato2, tablaTerceto[numeroTerceto].dato3);
+	return numeroTerceto++;
+}
+
+void modificarTerceto(int posicion, int inc)
+{
+	//printf("REEMPLAZANDO: POS %d - INC %d - NUMTERCERO %d\n", posicion, inc, numeroTerceto);
+	//printf("EN POS: %s - %s - %s\n", tablaTerceto[posicion].dato1, tablaTerceto[posicion].dato2, tablaTerceto[posicion].dato3);
+	
+	sprintf(tablaTerceto[posicion].dato2, "[ %d ]", numeroTerceto + inc);
+	//itoa((numeroTerceto + inc), tablaTerceto[posicion].dato2, 10);
+
+}
+
+void mostrarTerceto()
+{
+	for(int i = 0; i < numeroTerceto; i++)
+		printf("TERCERTO: %d - OPERADOR: %s - OPERANDO1: %s - OPERANDO2: %s\n", tablaTerceto[i].indice, tablaTerceto[i].dato1, tablaTerceto[i].dato2, tablaTerceto[i].dato3);
+
+}
+
+char* negarSalto(char* operadorSalto)
+{
+	if (strcmp(operadorSalto, "JE") == 0) // IGUAL
+	{
+		return "JEN"; // DISTINTO
+	}
+	if (strcmp(operadorSalto, "JNE") == 0) // DISTINTO
+	{
+		return "JE"; //IGUAL
+	}
+	if (strcmp(operadorSalto, "JB") == 0) // MENOR
+	{
+		return "JAE"; // MAYOR O IGUAL
+	}
+	if (strcmp(operadorSalto, "JA") == 0) //MAYOR
+	{
+		return "JBE"; //MENOR O IGUAL
+	}
+	if (strcmp(operadorSalto, "JBE") == 0) //MENOR O IGUAL
+	{
+		return "JA";	//MAYOR
+	}
+	if (strcmp(operadorSalto, "JAE") == 0) //MAYOR O IGUAL
+	{
+		return "JB"; //MENOR
+	}
+	if (strcmp(operadorSalto, "JZ") == 0) //
+	{
+		return "JNZ";
+	}
+	if (strcmp(operadorSalto, "JNZ") == 0)
+	{
+		return "JZ";
+	}
+}
+
+void insertarIDs(){
 	if(cantIds > canttipos) {
 		cantIds = canttipos;
 	}
-	for(i=0;i<cantIds;i++) {
-		if(existeID(ids[i])) 
-			insertarEnTabla(ids[i],(tipoid[i] == 1 ? "FLOAT" : "INTEGER"),"--",0,0);
-		
+	for(int i = 0; i < cantIds ; i++) {
+		/*SI NO EXISTE, INSERTO*/
+		if(!existeID(ids[i])) 
+		{
+			strcpy(tablaId[numeroId].nombre, ids[i]);
+			tablaId[numeroId].tipo = tipoid[i];
+			strcpy(tablaId[numeroId].valor, "--");
+			strcpy(tablaId[numeroId].longitud, "");
+			numeroId++;
+		}
+		/*SI EXISTE, ERROR*/
 	}
-	
+
 	memset( ids, '\0', MAX_IDS );
 	memset( tipoid, '\0', MAX_IDS );
 	cantIds = 0;
 	canttipos = 0;
-		
-		
+
+
 }
 
-int existeID(char *id){
-  FILE *archTS2 = fopen("ts.txt","rt");
-  char linea[100];
-  char *aux,*ptr;
-  char nombre[30];
-  
-  fgets(linea,sizeof(linea),archTS2);
-  while(fgets(linea,sizeof(linea),archTS2)!=NULL)
-  {
-	aux=strchr(linea,'\n');
-	aux-=62;
-        *aux='\0';
-        aux-=30;
-	strcpy(nombre,aux);
-	strtok(nombre," ");
-        	if(strcmp(nombre,id)==0){
-			fclose(archTS2);
-			return 0;
-		}
-  }
-
-  fclose(archTS2);
-  return 1;
-}
-
-int existeCTE(char *cte){
-  FILE *archTS2 = fopen("ts.txt","rt");
-  char linea[100];
-  char *aux,*ptr;
-  char nombre[30];
-
-	fgets(linea,sizeof(linea),archTS2);
-	while(fgets(linea,sizeof(linea),archTS2)!=NULL)
-    	{
-	aux=strchr(linea,'\n');
-	aux-=62;
-        *aux='\0';
-        aux-=30;
-	strcpy(nombre,aux);
-	strtok(nombre," ");
-        	if(strcmp(nombre,cte)==0){
-			fclose(archTS2);
-			return 0;
-		}
-    	}
-
-   fclose(archTS2);
-   return 1;
-}
-
-void insertarEnTabla(char* nombreSimbolo,char* tipoSimbolo,char* valorString,int valorInteger, double valorFloat){
-  FILE *archTS2 = fopen("ts.txt","a");
-  char valor[20];
-  char guionBajo[30]="_";
-  char nombre[50];
-
-	if(strcmp(tipoSimbolo,"FLOAT")==0 || strcmp(tipoSimbolo,"INTEGER")==0 || strcmp(tipoSimbolo,"STRING")==0)
-		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo,tipoSimbolo,"--","");
+void insertarConstante(char* nombre, int tipo, char* valor)
+{
+	char auxLongitud[31];
 	
-	if(strcmp(tipoSimbolo,"CONST_INT") == 0){
-		sprintf(valor,"%d",valorInteger);
-		if(strcmp(nombreSimbolo, "") == 0)
-			strcpy(nombre, strcat(guionBajo, valor));
+	if(!existeID(nombre)) {
+		strcpy(tablaId[numeroId].nombre, nombre);
+		tablaId[numeroId].tipo = tipo;
+		strcpy(tablaId[numeroId].valor, valor);
+		if(tipo == CTE_S){
+			sprintf(tablaId[numeroId].longitud, "%d", strlen(tablaId[numeroId].valor) - 2);
+		}
 		else
-			strcpy(nombre, nombreSimbolo);
+			strcpy(tablaId[numeroId].longitud, "");
+			
+		numeroId++;
+	}
+	/* SINO ERROR PORQUE YA EXISTE*/
 		
-		if(existeCTE(nombre) !=0 )
-			fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombre," ",valor,"");
+	
+}
+
+void mostrarID()
+{
+	for(int i = 0; i < numeroId; i++)
+		printf("ID: %d - NOMBRE: %s - TIPO: %d - VALOR: %s - LONGITUD: %s\n", i, tablaId[i].nombre, tablaId[i].tipo, tablaId[i].valor, tablaId[i].longitud);
+
+}
+
+int existeID(char* id)
+{
+	for(int i = 0; i < numeroId; i++)
+	{
+		if(strcmp(tablaId[i].nombre, id) == 0)
+			return 1;
+	}
+	return 0;
+}
+
+
+
+/* EXPORTACION DE TABLAS */
+void exportarTablas()
+{
+	FILE *ts = fopen("ts.txt", "wt");
+	FILE *intermedia = fopen("intermedia.txt", "wt");
+	
+	fprintf(ts, "NOMBRE\t\t\t\tTIPO\t\t\t\tVALOR\t\t\tLONGITUD\n");
+	
+	/* IDs */
+	for(int i = 0; i < numeroId; i++) {
+		fprintf(ts, "%-30s%-30s%-30s%s\n", tablaId[i].nombre, (tablaId[i].tipo == 273 ? "INTEGER" : "FLOAT"), tablaId[i].valor, tablaId[i].longitud);
 	}
 	
-	if(strcmp(tipoSimbolo,"CONST_REAL") == 0){
-		sprintf(valor,"%f",valorFloat);
-		if(strcmp(nombreSimbolo, "") == 0)
-			strcpy(nombre, strcat(guionBajo, valor));
-		else
-			strcpy(nombre, nombreSimbolo);
-		
-		if(existeCTE(nombre) !=0 )
-			fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombre," ",valor,"");
+	
+	for(int i = 0; i < numeroTerceto; i++) {
+		fprintf(intermedia, "|  %d  | ( %s, %s, %s )\n", tablaTerceto[i].indice, tablaTerceto[i].dato1, tablaTerceto[i].dato2, tablaTerceto[i].dato3);
 	}
-	if(strcmp(tipoSimbolo,"CONST_STR") == 0) {
-		
-		if(strcmp(nombreSimbolo, "") == 0)
-			strcpy(nombre, strcat(guionBajo, valor));
-		else
-			strcpy(nombre, nombreSimbolo);
-		
-		strtok(valorString,";");
-		if(existeCTE(nombre) !=0 )
-			fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombre," ",valorString,strlen(valorString)-2);
-		
-	}
-	/*if(strcmp(tipoSimbolo,"REAL_CONST") == 0) {
-		sprintf(valor,"%f",valorFloat);
-		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo," ", valor, "");
-	}
-	if(strcmp(tipoSimbolo,"INT_CONST") == 0) {
-		sprintf(valor,"%d",valorInteger);
-		fprintf(archTS2,"%-30s%-30s%-30s%2s\n",nombreSimbolo," ",valor, "");
-	}
-	if(strcmp(tipoSimbolo,"STR_CONST") == 0) {
-		sprintf(valor,"%f",valorFloat);
-		fprintf(archTS2,"%-30s%-30s%-30s%02d\n",nombreSimbolo," ",valorString,strlen(valorString)-1);
-	}*/
-
-	fclose(archTS2);
-
+	
+	fclose(ts);
+	fclose(intermedia);
+	
 }
-
-

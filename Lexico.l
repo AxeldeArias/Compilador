@@ -47,10 +47,10 @@ CTE_S 		\".*\"
 
 
 "="			{ printf("=");				return OP_ASIG;}
-"+"			{ printf("+");				return OP_SUMARESTA;}
-"-"			{ printf("-");				return OP_SUMARESTA;}
-"*"			{ printf("*");				return OP_MULDIV;}
-"/"			{ printf("/");				return OP_MULDIV;}
+"+"			{ printf("+");				return OP_SUMA;}
+"-"			{ printf("-");				return OP_RESTA;}
+"*"			{ printf("*");				return OP_MUL;}
+"/"			{ printf("/");				return OP_DIV;}
 
 "("			{ printf("(");				return PARENTESIS_A;}
 ")"			{ printf(")");				return PARENTESIS_C;}
@@ -62,17 +62,21 @@ CTE_S 		\".*\"
 ";"			{ printf(";");				return PYC; }
 ":"			{ printf(":");				return DOSPUNTOS; }
 
-"=="		{ printf("=="); 	return OP_COMPARACION;}
-"!=="		{ printf("!=="); 	return OP_COMPARACION;}
-"<"			{ printf("<"); 		return OP_COMPARACION;}
-"<="		{ printf("<="); 	return OP_COMPARACION;}
-">"			{ printf(">"); 		return OP_COMPARACION;}
-">="		{ printf(">=");		return OP_COMPARACION;}
-"AND"		{ printf("AND");	return OP_LOGICO;}
-"OR"		{ printf("OR");		return OP_LOGICO;}
+"=="		{ printf("=="); 	return OP_IGUAL;}
+"!=="		{ printf("!=="); 	return OP_DISTINTO;}
+"<"			{ printf("<"); 		return OP_MENOR;}
+"<="		{ printf("<="); 	return OP_MENORIGUAL;}
+">"			{ printf(">"); 		return OP_MAYOR;}
+">="		{ printf(">=");		return OP_MAYORIGUAL;}
+"AND"		{ printf("AND");	return OP_LOGICO_AND;}
+"OR"		{ printf("OR");		return OP_LOGICO_OR;}
 "!"			{ printf("!");		return OP_NEGACION; }
 
-{ID}			{ yylval.str_val = yytext; printf( "ID(%s)", yylval.str_val); return ID;}
+{ID}			{ 
+					yylval.str_val = yytext; 
+					printf( "ID(%s)", yylval.str_val); 
+					return ID;
+				}
 {CTE_E}			{ 	if(atoi(yytext)<=32767 && atoi(yytext)>=-32768)
 					{
 						yylval.intval = atoi(yytext); 
