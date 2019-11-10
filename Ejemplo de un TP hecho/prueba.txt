@@ -1,0 +1,38 @@
+-/
+ESTO
+ES
+UN
+COMENTARIO
+/-
+
+DECVAR	
+ x,w,k : real
+ y,z,l : integer
+ h : string
+ENDDEC
+
+beginp
+
+l := k := w := 105.54
+write l
+write k
+ 
+z := 10
+x := 4.5 + (9 * 1) - z
+write x
+y := 95
+
+if(x >= 3.5){
+ write y
+}else{
+ write 'Else'
+}
+while(BETWEEN(x,[0;1]) or BETWEEN(z,[5;y * (x - 3)])){
+ z := z * 2
+ write 'While'
+}
+
+h := 'Mensaje de prueba'
+write h
+
+endp

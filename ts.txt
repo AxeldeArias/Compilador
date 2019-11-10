@@ -9,8 +9,16 @@ p3                            INTEGER                       --
 p4                            FLOAT                         --                            
 h1                            INTEGER                       --                            
 h2                            FLOAT                         --                            
+<<<<<<< Updated upstream
 constante1                    FLOAT                         123                           
 constante2                    FLOAT                         0.5                           
 constante3                    FLOAT                         "HOLA"                        4
 string1                       FLOAT                         "ASD ASD AAASSD"              14
 constante5                    FLOAT                         "1113333333"                  10
+=======
+constante1                    CONST_INTEGER                 123                           
+constante2                    CONST_FLOAT                   0.5                           
+constante3                    CONST_STRING                  "HOLA"                        
+string1                       CONST_STRING                  "ASD ASD AAASSD"              
+constante5                    CONST_STRING                  "1113333333"                  
+>>>>>>> Stashed changes

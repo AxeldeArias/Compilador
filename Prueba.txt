@@ -16,38 +16,36 @@ ENDVAR
 CONST constante1 = 123;
 CONST constante2 = .5;
 CONST constante3 = "HOLA";
-variable1=variable2;
-entero1=5;
-entero2=50;
-float1=2147483647.0;
-float2=2.;
-float3=.5;
+aa=a;
+d=2147483.0;
 CONST string1="ASD ASD AAASSD";
+h2=2.;
+p4=.5;
 
 IF(a<(j+s*5)) {
-	float4=2.;
+	aa=2.;
 }
 IF((a+25*i)>3) {
-	float5=2.;
+	aa=2.;
 }
 IF(3<=b) {
-	float6=2.;
+	h2=2.;
 }
 IF(3>=b) {
-	float6=2.;
+	h2=2.;
 }
 IF(3<=b AND a<b) {
-	float6=2.;
+	h2=2.;
 }
 
 IF(b!==5 OR 5==c) {
-	entero25 = 52;
+	b = 52;
 	IF(z2>=z3) {
-		entero26=125;
+		b=125;
 	}
 }	
 IF(3<=b) {
-	float6=2.;
+	h2=2.;
 }
 
 REPEAT
@@ -57,8 +55,8 @@ REPEAT
 		READ var1;
 		PRINT var2;
 	UNTIL(FILTER(_>=24,[a,b,c,d,f,g])!==a);
-	float7=3;
-	inte3=5;
+	b=3;
+	b=5;
 UNTIL(a<b);
 
 IF(a==6) {
